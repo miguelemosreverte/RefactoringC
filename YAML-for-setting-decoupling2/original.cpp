@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <string>
 #include <list>
+#include <map>
 #include "timespan.h"
 using namespace std;
 
@@ -64,24 +65,45 @@ class MyLinkedTimestamp {
         float acummulated_bytes = 0.0;
         float primer_nro_destino = this->lista.front().nro_destino;
         cout << "Entrando en contarCantidadDePaquetesEnviados" << endl;
-
-        /*while (this->lista != NULL) {
-            if (this->lista->nro_destino == primer_nro_destino) {
-                cantidad_de_paquetes_enviados++;
-                acummulated_bytes += this->lista->bytes;
-
-            }
-
-            this->lista = this->lista->next;
-
+        for (auto item: this->lista){
+          if(item.nro_destino == primer_nro_destino){
+            cantidad_de_paquetes_enviados++;
+            acummulated_bytes += item.bytes;
+          }
         }
 
         cout << "la cantidad de paquetes es: " << cantidad_de_paquetes_enviados << " son = " << acummulated_bytes / 1000 << " kilobytes " << endl;
-        */
+
     };
 
     //Consigna 5
-    void calcularKBpsPromedio(){};
+    void calcularKBpsPromedio(){
+
+        std::map<int,int> timestamp_to_bytes_sent;
+        for (auto item: this->lista){
+          int timestamp = item.hora * 36000 + item.min * 60 + item.seg;
+          timestamp_to_bytes_sent[timestamp] = item.bytes;
+        }
+
+        std::list<int> timestamps_grouped_by_range;
+        int range_in_seconds = 60 * 5;
+        int acummulated_seconds = 0;
+        int acummulated_bytes = 0;
+        for (auto item: timestamp_to_bytes_sent){
+          acummulated_seconds += item.first;
+          acummulated_bytes += item.second;
+          if (acummulated_seconds >= range_in_seconds){
+            acummulated_seconds = 0;
+            timestamps_grouped_by_range.push_back(acummulated_bytes);
+            acummulated_bytes = 0;
+          }
+        }
+
+        for (auto item: timestamps_grouped_by_range){
+          cout << "Average Kb sent every 5 minutes: " << item / 1000<< " Kbps" <<endl;
+        }
+
+    };
 }myLinkedTimestamps;
 
 
@@ -102,6 +124,7 @@ int main() {
     myLinkedTimestamps.cargarArchivo();
     myLinkedTimestamps.toString();
     myLinkedTimestamps.contarCantidadDePaquetesEnviados();
+    myLinkedTimestamps.calcularKBpsPromedio();
 
     /*if (cargarArchivo() == 1) {
         cerr << "hubo algun problema interno." << endl;
