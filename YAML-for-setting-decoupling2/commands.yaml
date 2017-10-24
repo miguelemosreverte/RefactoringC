@@ -1,0 +1,26 @@
+output_dir: "report/"
+save: (command) >> output_file
+
+filenames:
+  - original.cpp
+  #- modified.cpp
+
+commands:
+  main:
+    create_profile : g++ -std=c++11 -pg -fprofile-arcs -ftest-coverage source_filename timespan.cpp
+    execute: ./a.out
+    gprof: gprof a.out
+    gcov: gcov source_filename; cat source_filename.gcov
+    #valgrind: g++ -g source_filename;valgrind --log-fd=1 ./a.out 2000
+
+  report:
+    echo_nanoseconds: head -n 7 report_filename | tail -n 1
+    flatTable: head -n 20 report_filename | tail -n 6
+
+
+cleanup:
+  extensions:
+    - out
+    - gcda
+    - gcno
+    - gcov
